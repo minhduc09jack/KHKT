@@ -1,0 +1,29 @@
+# === DỮ LIỆU (Quá lớn cho Git) ===
+federated_data/
+pneumonia_raw_data/
+*.pth
+
+# === Python ===
+__pycache__/
+*.pyc
+.Python
+env/
+venv/
+*.egg-info/
+
+# === Log files ===
+logs/*.log
+
+# === macOS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# === Các file nén ===
+archive.zip
