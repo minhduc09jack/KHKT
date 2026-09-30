@@ -28,6 +28,17 @@ Dự án xây dựng một hệ thống AI chẩn đoán Viêm phổi (Pneumonia
 
 > **Phát hiện quan trọng:** Nhiễu vi phân (DP) không chỉ bảo mật mà còn hoạt động như một bộ điều chuẩn (Regularizer), giúp mô hình chống học vẹt (Overfitting) và đạt F1-Score cao hơn phiên bản không có DP.
 
+## 🗃️ Phân bố Dữ liệu (Non-IID Data)
+
+Dữ liệu được chia theo hướng **Non-IID (Non-Independent and Identically Distributed)** để mô phỏng thực tế: mỗi bệnh viện có số lượng bệnh nhân và tỷ lệ nhiễm bệnh khác nhau.
+
+| Nút (Node) | Phân bố (Train) | Phân bố (Validation) | Đặc điểm mô phỏng |
+|:---|:---|:---|:---|
+| **Client 1 (Bệnh viện Phổi)** | 507 Normal, 273 Pneumonia | 126 Normal, 68 Pneumonia | Bệnh viện chuyên khoa, cân bằng hơn (~35% Pneumonia) |
+| **Client 2 (BV Cấp cứu)** | 253 Normal, 1094 Pneumonia | 63 Normal, 273 Pneumonia | Tuyến đầu cấp cứu, tỷ lệ viêm phổi cao (~81% Pneumonia) |
+| **Client 3 (PK Sàng lọc)** | 255 Normal, 1369 Pneumonia | 63 Normal, 342 Pneumonia | Phòng khám sàng lọc cộng đồng (~84% Pneumonia) |
+| **Server (Global Test)** | 316 Normal, 854 Pneumonia | - | Tập kiểm thử độc lập đánh giá mô hình toàn cục |
+
 ## 🗂️ Cấu trúc thư mục
 
 ```
@@ -105,8 +116,8 @@ python3 plot_final_v5.py  # Biểu đồ Privacy-Utility Trade-off
      ┌─────▼─────┐  ┌─────▼─────┐  ┌─────▼─────┐
      │ Client 1  │  │ Client 2  │  │ Client 3  │
      │ BV Phổi   │  │ BV Cấp cứu│  │ PK Sàng lọc│
-     │ 780 ảnh   │  │ 390 ảnh   │  │ 468 ảnh   │
-     │ 67% PN    │  │ 50% PN    │  │ 40% PN    │
+     │ 780 ảnh   │  │ 1347 ảnh  │  │ 1624 ảnh  │
+     │ 35% PN    │  │ 81% PN    │  │ 84% PN    │
      └─────┬─────┘  └─────┬─────┘  └─────┬─────┘
            │              │              │
      ┌─────▼──────────────▼──────────────▼─────┐
