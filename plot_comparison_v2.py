@@ -3,20 +3,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def main():
-    # Load Federated V4 Data
+    # Load Federated V2 Data
     try:
-        with open('federated_metrics_fedprox_v4.json', 'r') as f:
+        with open('federated_metrics_fedprox_v2.json', 'r') as f:
             fed_data = json.load(f)['history']
     except:
-        print("Fed V4 data not found.")
+        print("Fed V2 data not found.")
         return
 
-    # Load Centralized V4 Data
+    # Load Centralized V2 Data
     try:
-        with open('centralized_metrics_v4.json', 'r') as f:
+        with open('centralized_metrics_v2.json', 'r') as f:
             cen_data = json.load(f)
     except:
-        print("Cen V4 data not found.")
+        print("Cen V2 data not found.")
         return
 
     fed_rounds = sorted([int(k) for k in fed_data.keys()])
@@ -35,7 +35,7 @@ def main():
     # Plot F1 Score
     plt.subplot(1, 2, 1)
     plt.plot(cen_epochs, cen_f1, 'b^-', label='Centralized Baseline (Gold Standard)', linewidth=2, markersize=6)
-    plt.plot(fed_rounds, fed_f1, 'go-', label='Federated Learning V4 (FedProx)', linewidth=2, markersize=4)
+    plt.plot(fed_rounds, fed_f1, 'go-', label='Federated Learning V2 (FedProx)', linewidth=2, markersize=4)
     plt.title('Macro F1-Score: Federated vs Centralized')
     plt.xlabel('Training Steps (Epochs / Rounds)')
     plt.ylabel('Macro F1 Score')
@@ -54,7 +54,7 @@ def main():
     # Plot Accuracy
     plt.subplot(1, 2, 2)
     plt.plot(cen_epochs, cen_acc, 'b^-', label='Centralized Baseline', linewidth=2, markersize=6)
-    plt.plot(fed_rounds, fed_acc, 'go-', label='Federated Learning V4', linewidth=2, markersize=4)
+    plt.plot(fed_rounds, fed_acc, 'go-', label='Federated Learning V2', linewidth=2, markersize=4)
     plt.title('Accuracy: Federated vs Centralized')
     plt.xlabel('Training Steps (Epochs / Rounds)')
     plt.ylabel('Accuracy')
@@ -63,7 +63,7 @@ def main():
     plt.ylim(0.85, 1.0)
 
     plt.tight_layout()
-    plt.savefig('v4_comparison_plot.png', dpi=300)
+    plt.savefig('v2_comparison_plot.png', dpi=300)
     print("Plot saved.")
 
 if __name__ == '__main__':

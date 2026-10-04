@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-server_v5_dp.py — FL Server (V5 - DP)
+server_v3_dp.py — FL Server (V3 - DP)
 =============================================================================
-Matches the architecture of V4 but outputs to a different metric file.
+Matches the architecture of V2 but outputs to a different metric file.
 """
 
 import argparse
@@ -63,7 +63,7 @@ class ChestXrayEnsemble(nn.Module):
         self.efficientnet.classifier[1] = nn.Linear(self.efficientnet.classifier[1].in_features, 2)
     def forward(self, x): return (self.densenet(x) + self.efficientnet(x)) / 2.0
 
-def get_evaluate_fn(data_root, device, history_dict, save_path="global_model_v5_dp.pth"):
+def get_evaluate_fn(data_root, device, history_dict, save_path="global_model_v3_dp.pth"):
     transform = transforms.Compose([
         CLAHE_Transform(), transforms.Resize((224, 224)), transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
@@ -74,7 +74,7 @@ def get_evaluate_fn(data_root, device, history_dict, save_path="global_model_v5_
     criterion = nn.CrossEntropyLoss()
 
     def evaluate(server_round, parameters, config):
-        logger.info("🧪 ROUND %d: Global Eval (V5 - DP)", server_round)
+        logger.info("🧪 ROUND %d: Global Eval (V3 - DP)", server_round)
         params_dict = zip(model.state_dict().keys(), parameters)
         model.load_state_dict(OrderedDict({k: torch.tensor(v) for k, v in params_dict}), strict=True)
         model.eval()
@@ -117,7 +117,7 @@ def main():
 
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     history_dict = {}
-    weights_path = f"global_model_v5_dp_sigma{args.sigma}.pth"
+    weights_path = f"global_model_v3_dp_sigma{args.sigma}.pth"
     eval_fn = get_evaluate_fn(Path(args.data_root).resolve(), device, history_dict, save_path=weights_path)
 
     def weighted_average(metrics):
@@ -134,7 +134,7 @@ def main():
     fl.server.start_server(server_address="0.0.0.0:8080", config=fl.server.ServerConfig(num_rounds=args.rounds), strategy=strategy)
     logger.info("💾 Trọng số toàn cục cuối cùng đã được lưu tại: %s", weights_path)
 
-    out = f"federated_metrics_v5_dp_sigma{args.sigma}.json"
+    out = f"federated_metrics_v3_dp_sigma{args.sigma}.json"
     with open(out, "w") as f:
         json.dump({"rounds": args.rounds, "sigma": args.sigma, "history": history_dict}, f, indent=2)
 

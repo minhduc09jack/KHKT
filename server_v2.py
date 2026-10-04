@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-server_v4.py — Flower Federated Learning Server (V4 - ENSEMBLE)
+server_v2.py — Flower Federated Learning Server (V2 - ENSEMBLE)
 =============================================================================
 
 Architecture: DenseNet-121 + EfficientNet-B0 (Soft Voting)
@@ -156,7 +156,7 @@ def get_evaluate_fn(data_root: Path, device: torch.device, history_dict: Dict[st
     return evaluate
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="🌸 Flower FL Server V4")
+    parser = argparse.ArgumentParser(description="🌸 Flower FL Server V2")
     parser.add_argument("--data-root", type=str, default="./federated_data")
     parser.add_argument("--strategy", type=str, choices=["fedavg", "fedprox"], default="fedprox")
     parser.add_argument("--rounds", type=int, default=30)
@@ -181,14 +181,14 @@ def main() -> None:
             proximal_mu=args.mu,
         )
 
-    logger.info("🚀 Starting Flower Server V4 on %s...", args.host)
+    logger.info("🚀 Starting Flower Server V2 on %s...", args.host)
     fl.server.start_server(
         server_address=args.host,
         config=fl.server.ServerConfig(num_rounds=args.rounds),
         strategy=strategy,
     )
 
-    output_file = f"federated_metrics_{args.strategy}_v4.json"
+    output_file = f"federated_metrics_{args.strategy}_v2.json"
     logger.info("💾 Saving evaluation history to %s", output_file)
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump({"strategy": args.strategy, "rounds": args.rounds, "mu": args.mu if args.strategy == "fedprox" else None, "history": history_dict}, f, indent=2)

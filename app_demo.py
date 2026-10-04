@@ -75,11 +75,11 @@ with gr.Blocks() as demo:
     Mô hình **DenseNet-121 + EfficientNet-B0 (Soft Voting)** được huấn luyện phân tán (FL) từ 3 Bệnh viện mô phỏng
     với thuật toán **FedProx (μ=1.0)** và bảo mật bằng **Nhiễu vi phân Gaussian (σ=0.01)**.
     
-    | Chỉ số | Centralized | FL V4 (Không DP) | FL V5 (Có DP) |
+    | Chỉ số | Phiên bản V1 (Gộp) | Phiên bản V2 (FL Không DP) | Phiên bản V3 (FL + DP) |
     |--------|:-----------:|:----------------:|:-------------:|
-    | **F1-Score** | 96.24% | 94.45% | **95.61%** |
-    | **Accuracy** | 96.67% | 95.47% | **96.58%** |
-    | Bảo mật | ❌ Không | ❌ Không | ✅ DP (ε-private) |
+    | **F1-Score** | 96.25% | 94.45% | **95.61%** |
+    | **Accuracy** | 97.01% | 95.47% | **96.58%** |
+    | Bảo mật | ❌ Không | ❌ Không | ✅ LDP (ε-private) |
     """)
     
     with gr.Row():

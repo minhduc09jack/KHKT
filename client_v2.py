@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-client_v4.py — Flower Federated Learning Client (V4 - ENSEMBLE)
+client_v2.py — Flower Federated Learning Client (V2 - ENSEMBLE)
 =============================================================================
 
 Architecture: DenseNet-121 + EfficientNet-B0 (Soft Voting)
@@ -252,7 +252,7 @@ class ChestXrayClient(fl.client.NumPyClient):
         self.lr = lr
 
         self.logger.info("═" * 60)
-        self.logger.info("🏥 FL V4 Client (DenseNet+EfficientNet Ensemble): %s", self.client_name)
+        self.logger.info("🏥 FL V2 Client (DenseNet+EfficientNet Ensemble): %s", self.client_name)
         
         self.model = ChestXrayEnsemble(NUM_CLASSES).to(self.device)
 
@@ -282,7 +282,7 @@ class ChestXrayClient(fl.client.NumPyClient):
         return loss, num_samples, metrics
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="🏥 Flower FL Client V4")
+    parser = argparse.ArgumentParser(description="🏥 Flower FL Client V2")
     parser.add_argument("--client-dir", type=str, required=True)
     parser.add_argument("--server", type=str, default="127.0.0.1:8080")
     parser.add_argument("--batch-size", type=int, default=16)

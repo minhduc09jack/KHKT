@@ -2,7 +2,7 @@ import json
 import re
 
 log_file = "/Users/maulen/.gemini/antigravity-ide/brain/e7f3e836-af95-4c02-b7f1-d0e58221c105/.system_generated/tasks/task-890.log"
-json_file = "federated_metrics_v5_dp_sigma0.01.json"
+json_file = "metrics/federated_metrics_v5_dp_sigma0.01.json"
 
 history = []
 with open(log_file, "r") as f:
@@ -17,7 +17,7 @@ with open(log_file, "r") as f:
                 f1 = float(match.group(4))
                 # Add if not already present
                 if not any(item[0] == rnd for item in history):
-                    history.append((rnd, {"accuracy": acc, "macro_f1": f1}))
+                    history.append((rnd, {"loss": loss, "accuracy": acc, "macro_f1": f1}))
 
 data = {
     "rounds": 30,

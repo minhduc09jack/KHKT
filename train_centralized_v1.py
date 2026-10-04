@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-train_centralized_v4.py — Centralized Baseline (V4 - ENSEMBLE)
+train_centralized_v2.py — Centralized Baseline (V2 - ENSEMBLE)
 =============================================================================
 
 Trains the exact same Ensemble architecture on the aggregated dataset (All Clients)
@@ -105,7 +105,7 @@ def get_device():
 # ═══════════════════════════════════════════════════════════════════════════════
 def main():
     device = get_device()
-    logger.info("🚀 Bắt đầu Huấn luyện Centralized Baseline V4 trên %s", device.type.upper())
+    logger.info("🚀 Bắt đầu Huấn luyện Centralized Baseline V2 trên %s", device.type.upper())
 
     data_root = Path("./federated_data")
     clients = ["client_1_lung_hospital", "client_2_emergency_general", "client_3_screening_clinic"]
@@ -114,7 +114,7 @@ def main():
     train_datasets = [LocalChestXrayDataset(data_root / c, "train", get_train_transforms()) for c in clients]
     combined_train = ConcatDataset(train_datasets)
     
-    # Global Test Set (Tương tự Server V4)
+    # Global Test Set (Tương tự Server V2)
     test_dataset = LocalChestXrayDataset(data_root, "global_test", get_eval_transforms())
 
     logger.info("📦 Tổng ảnh Huấn luyện gộp (All Clients): %d", len(combined_train))
@@ -183,7 +183,7 @@ def main():
         history[epoch+1] = {"train_acc": train_acc, "test_acc": val_acc, "test_f1": val_f1}
 
     # Lưu JSON
-    output_file = "centralized_metrics_v4.json"
+    output_file = "centralized_metrics_v2.json"
     with open(output_file, "w") as f:
         json.dump(history, f, indent=2)
     logger.info("💾 Đã lưu kết quả vào %s", output_file)

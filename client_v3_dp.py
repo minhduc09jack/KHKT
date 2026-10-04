@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-client_v5_dp.py — FL Client with DIFFERENTIAL PRIVACY (LDP)
+client_v3_dp.py — FL Client with DIFFERENTIAL PRIVACY (LDP)
 =============================================================================
 Architecture: DenseNet-121 + EfficientNet-B0
 Privacy: Client-Level Gradient Clipping + Gaussian Noise
