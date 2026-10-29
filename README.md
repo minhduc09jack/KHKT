@@ -1,3 +1,14 @@
+---
+title: MedAI Diagnostic PACS/HIS - Federated Learning & Differential Privacy
+emoji: 🏥
+colorFrom: blue
+colorTo: teal
+sdk: static
+app_file: index.html
+pinned: true
+license: mit
+---
+
 # 🏥 Federated Learning for Pneumonia Detection with Differential Privacy
 
 > **Dự án Khoa học Kỹ thuật (KHKT)** — Ứng dụng Học máy Liên kết (Federated Learning) và Bảo mật Vi phân (Differential Privacy) trong chẩn đoán Viêm phổi qua ảnh X-quang ngực.

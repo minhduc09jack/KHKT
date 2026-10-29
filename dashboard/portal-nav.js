@@ -104,6 +104,9 @@
                     <button type="button" class="btn-rbac-info dataset-btn" onclick="window.openHospitalDatasetModal()" title="Import Dataset bệnh án & ảnh X-Quang có sẵn của Bệnh viện từ folder federated_data">
                         <i class="fa-solid fa-database"></i> <span class="hide-sm">Import Dataset BV</span>
                     </button>
+                    <button type="button" class="btn-rbac-info" onclick="window.openPosterQRModal()" title="Tạo bộ Mã QR cho 3 giao diện để in lên Poster KHKT & Hướng dẫn Deploy 24/7">
+                        <i class="fa-solid fa-qrcode"></i> <span class="hide-sm">Mã QR Poster</span>
+                    </button>
                     <button type="button" class="btn-rbac-info" onclick="window.openRBACSecurityModal()" title="Xem phân quyền chi tiết & Quy chuẩn bảo mật bệnh viện">
                         <i class="fa-solid fa-key"></i> <span class="hide-sm">Phân quyền RBAC</span>
                     </button>
@@ -594,6 +597,150 @@
             modal.close();
         } else if (modal) {
             modal.removeAttribute('open');
+        }
+    };
+
+    // =========================================================================
+    // KHKT POSTER QR CODE GENERATOR & 24/7 CLOUD DEPLOYMENT MODAL
+    // =========================================================================
+    function buildPosterQRModalHTML() {
+        const currentOrigin = (window.location.origin && !window.location.origin.includes('localhost'))
+            ? window.location.origin
+            : 'https://aaee48221f8b65.lhr.life';
+
+        const techUrl = `${currentOrigin}/dashboard/technician.html`;
+        const docUrl = `${currentOrigin}/dashboard/index.html`;
+        const adminUrl = `${currentOrigin}/dashboard/admin.html`;
+
+        const qrApi = (url) => `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(url)}`;
+
+        return `
+            <dialog id="poster-qr-modal" class="medai-modal">
+                <div class="medai-modal-content">
+                    <div class="medai-modal-header">
+                        <div>
+                            <h3><i class="fa-solid fa-qrcode"></i> Bộ Mã QR In Poster KHKT & Triển khai Cloud 24/7</h3>
+                            <p>Ban Giám khảo quét mã QR bằng điện thoại để trải nghiệm trực tiếp cả 3 vai trò: Kỹ thuật viên X-Quang &rarr; Bác sĩ Chẩn đoán &rarr; Admin Bệnh viện</p>
+                        </div>
+                        <button type="button" class="modal-close-btn" onclick="window.closePosterQRModal()" aria-label="Đóng">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="medai-modal-body">
+                        <div class="qr-url-bar">
+                            <label for="qr-base-domain-input"><strong>Tên miền (Domain) tạo Mã QR:</strong></label>
+                            <input type="text" id="qr-base-domain-input" value="${escapeSafe(currentOrigin)}" placeholder="VD: https://biboxu-medai-diagnostic.hf.space hoặc https://minhduc09jack.github.io/KHKT">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="window.updatePosterQRCodes()">
+                                <i class="fa-solid fa-rotate"></i> Cập nhật Mã QR
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="window.print()">
+                                <i class="fa-solid fa-print"></i> In Bộ Mã QR Dán Poster
+                            </button>
+                        </div>
+
+                        <div class="qr-poster-grid">
+                            <div class="qr-role-card tech">
+                                <span class="wf-step-badge">1. PHÒNG CHỤP X-QUANG</span>
+                                <h4><i class="fa-solid fa-x-ray"></i> Kỹ thuật viên X-Quang</h4>
+                                <div class="qr-img-box">
+                                    <img id="qr-img-tech" src="${qrApi(techUrl)}" alt="QR Kỹ thuật viên">
+                                </div>
+                                <a id="qr-link-tech" href="${escapeSafe(techUrl)}" target="_blank" class="qr-url-text">${escapeSafe(techUrl)}</a>
+                                <small>Thu nhận phim, cân bằng CLAHE, kiểm chuẩn QA/QC & đẩy ca chụp Cấp cứu STAT sang Bác sĩ</small>
+                            </div>
+
+                            <div class="qr-role-card doc">
+                                <span class="wf-step-badge">2. TRẠM ĐỌC PHIM PACS</span>
+                                <h4><i class="fa-solid fa-user-doctor"></i> Bác sĩ Chẩn đoán</h4>
+                                <div class="qr-img-box">
+                                    <img id="qr-img-doc" src="${qrApi(docUrl)}" alt="QR Bác sĩ Chẩn đoán">
+                                </div>
+                                <a id="qr-link-doc" href="${escapeSafe(docUrl)}" target="_blank" class="qr-url-text">${escapeSafe(docUrl)}</a>
+                                <small>Nhận phim từ KTV, phân tích Hybrid Ensemble + bản đồ nhiệt Grad-CAM & ký số SHA-256</small>
+                            </div>
+
+                            <div class="qr-role-card admin">
+                                <span class="wf-step-badge">3. TRUNG TÂM ĐIỀU HÀNH</span>
+                                <h4><i class="fa-solid fa-shield-halved"></i> Admin Bệnh viện</h4>
+                                <div class="qr-img-box">
+                                    <img id="qr-img-admin" src="${qrApi(adminUrl)}" alt="QR Admin Bệnh viện">
+                                </div>
+                                <a id="qr-link-admin" href="${escapeSafe(adminUrl)}" target="_blank" class="qr-url-text">${escapeSafe(adminUrl)}</a>
+                                <small>Cô lập 1 Admin = 1 Bệnh viện, điều phối FedProx + DP (σ=0.01) & Mô phỏng chống tấn công DLG</small>
+                            </div>
+                        </div>
+
+                        <div class="cloud-deploy-guide-box">
+                            <h4><i class="fa-solid fa-cloud-arrow-up"></i> Hướng dẫn Kích hoạt Link Cloud Cố định 24/7 (Miễn phí 100%, Không cần PRO / Thẻ Visa)</h4>
+                            <div class="cloud-steps-grid">
+                                <div class="cloud-step-item">
+                                    <strong>Cách 1: Hugging Face Static Space (Miễn phí 100% — Chọn "Static &rarr; Blank")</strong>
+                                    <ol>
+                                        <li>Tại màn hình <a href="https://huggingface.co/new-space" target="_blank">huggingface.co/new-space</a> của bạn (<code>biboxu</code>), chọn ô <strong>Static</strong> &rarr; mẫu <strong>Blank</strong> (miễn phí hoàn toàn, không cần gói PRO).</li>
+                                        <li>Đặt tên Space (VD: <code>medai-diagnostic</code>) và bấm <strong>Create Space</strong>.</li>
+                                        <li>Hệ thống đã tích hợp sẵn <strong>In-Browser Edge AI & Grad-CAM Engine</strong> nên toàn bộ tính năng phân tích X-Quang, tạo Heatmap Grad-CAM, DLG Lab và 3 cổng hoạt động 100% trên Static Space!</li>
+                                    </ol>
+                                </div>
+                                <div class="cloud-step-item">
+                                    <strong>Cách 2: GitHub Pages (Miễn phí 100% vĩnh viễn ngay trên GitHub)</strong>
+                                    <ol>
+                                        <li>Đẩy commit hiện tại lên GitHub: <code>git push origin main</code>.</li>
+                                        <li>Vào repo <code>minhduc09jack/KHKT</code> &rarr; <strong>Settings</strong> &rarr; <strong>Pages</strong> &rarr; mục Branch chọn <strong>main / (root)</strong> &rarr; <strong>Save</strong>.</li>
+                                        <li>Nhận ngay tên miền cố định vĩnh viễn: <code>https://minhduc09jack.github.io/KHKT/dashboard/index.html</code>.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="medai-modal-footer">
+                        <span class="text-muted" style="font-size:12px;"><i class="fa-solid fa-circle-check text-success"></i> Bạn có thể dán trực tiếp link Hugging Face / Render vào ô trên để cập nhật lại 3 Mã QR bất cứ lúc nào.</span>
+                        <button type="button" class="btn btn-secondary" onclick="window.closePosterQRModal()">Đóng</button>
+                    </div>
+                </div>
+            </dialog>
+        `;
+    }
+
+    window.openPosterQRModal = function () {
+        let modal = document.getElementById('poster-qr-modal');
+        if (modal) modal.remove();
+        document.body.insertAdjacentHTML('beforeend', buildPosterQRModalHTML());
+        modal = document.getElementById('poster-qr-modal');
+        if (modal && typeof modal.showModal === 'function') modal.showModal();
+        else if (modal) modal.setAttribute('open', 'open');
+    };
+
+    window.closePosterQRModal = function () {
+        const modal = document.getElementById('poster-qr-modal');
+        if (modal && typeof modal.close === 'function') modal.close();
+        else if (modal) modal.removeAttribute('open');
+    };
+
+    window.updatePosterQRCodes = function () {
+        const input = document.getElementById('qr-base-domain-input');
+        if (!input) return;
+        const base = input.value.trim().replace(/\/+$/, '');
+        if (!base) return;
+
+        const techUrl = `${base}/dashboard/technician.html`;
+        const docUrl = `${base}/dashboard/index.html`;
+        const adminUrl = `${base}/dashboard/admin.html`;
+        const qrApi = (url) => `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(url)}`;
+
+        const setRole = (suffix, url) => {
+            const img = document.getElementById('qr-img-' + suffix);
+            const link = document.getElementById('qr-link-' + suffix);
+            if (img) img.src = qrApi(url);
+            if (link) {
+                link.href = url;
+                link.textContent = url;
+            }
+        };
+        setRole('tech', techUrl);
+        setRole('doc', docUrl);
+        setRole('admin', adminUrl);
+        if (typeof showToast === 'function') {
+            showToast('✅ Đã cập nhật bộ 3 Mã QR theo tên miền mới!');
         }
     };
 
