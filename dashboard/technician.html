@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng Chụp X-Quang Kỹ Thuật Số (KTV Modality) - MedAI PACS/HIS</title>
+    <meta name="description" content="Giao diện Kỹ thuật viên Phòng X-Quang: Thu nhận ảnh DICOM, hiệu chỉnh CLAHE, kiểm chuẩn chất lượng phim QA/QC, AI Pre-Triage và chuyển ca chụp tới Bác sĩ Chẩn đoán.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=4.3">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" onclick="techNavigateTo('acquire')" style="cursor: pointer;" title="Trạm Kỹ thuật viên X-Quang">
+                <div class="logo-icon-wrap tech-theme">
+                    <i class="fa-solid fa-x-ray logo-icon"></i>
+                </div>
+                <div class="sidebar-brand">
+                    <h2>MedAI DR</h2>
+                    <span>KỸ THUẬT VIÊN X-QUANG</span>
+                </div>
+            </div>
+
+            <ul class="nav-links">
+                <li class="nav-item active" data-route="acquire">
+                    <a href="#/acquire"><i class="fa-solid fa-camera-rotate"></i> Trạm Chụp & Xử lý Phim</a>
+                </li>
+                <li class="nav-item" data-route="worklist-sent">
+                    <a href="#/worklist-sent">
+                        <i class="fa-solid fa-paper-plane"></i> Ca Đã Gửi Bác Sĩ
+                        <span class="nav-count-badge has-items" id="tech-sent-badge">0</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-route="modality-qa">
+                    <a href="#/modality-qa"><i class="fa-solid fa-radiation"></i> Kiểm chuẩn Máy & Liều Xạ</a>
+                </li>
+                <li class="nav-item" data-route="tech-profile">
+                    <a href="#/tech-profile"><i class="fa-solid fa-user-lock"></i> Phân quyền & Ca trực KTV</a>
+                </li>
+                <li class="nav-section-divider"><span>CHUYỂN GIAO DIỆN HỆ THỐNG</span></li>
+                <li class="nav-item">
+                    <a href="index.html">
+                        <i class="fa-solid fa-user-doctor"></i> Giao diện Bác sĩ Chẩn đoán
+                        <span class="nav-count-badge" id="sidebar-worklist-badge">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html"><i class="fa-solid fa-shield-halved"></i> Quản trị Client Bệnh viện</a>
+                </li>
+            </ul>
+
+            <div class="doctor-profile" onclick="techNavigateTo('tech-profile')" style="cursor: pointer;" title="Thông tin Kỹ thuật viên trực">
+                <img src="https://ui-avatars.com/api/?name=KTV+Nam&background=0D9488&color=fff" alt="Technician" id="sidebar-tech-avatar">
+                <div class="doc-info">
+                    <strong id="sidebar-tech-name">CN.KTV Phạm Hoàng Nam</strong>
+                    <span id="sidebar-tech-room">Phòng X-Quang DR-01</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="tech-main-content">
+
+            <!-- ======================================================= -->
+            <!-- VIEW 1: TRẠM CHỤP & XỬ LÝ PHIM X-QUANG (ACQUIRE) -->
+            <!-- ======================================================= -->
+            <section id="view-acquire" class="view-panel active">
+                <header class="topbar">
+                    <div class="page-title">
+                        <h1>Trạm Thu nhận & Kiểm chuẩn Phim X-Quang Kỹ thuật số (Modality Workstation)</h1>
+                        <p>Tiếp nhận chỉ định chụp, cân bằng sáng CLAHE, kiểm định QA/QC 4 tiêu chí và đẩy ca chụp sang Hàng đợi PACS của Bác sĩ Chẩn đoán</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary" onclick="window.openHospitalDatasetModal()"><i class="fa-solid fa-database"></i> Import Dataset (federated_data)</button>
+                        <button class="btn btn-secondary" onclick="resetTechForm()"><i class="fa-solid fa-rotate-right"></i> Làm mới ca chụp</button>
+                        <a href="index.html" class="btn btn-primary"><i class="fa-solid fa-user-doctor"></i> Mở Màn hình Bác sĩ Đọc Phim</a>
+                    </div>
+                </header>
+
+                <!-- Alert if any case was returned by Doctor for Retake -->
+                <div id="tech-retake-alert-strip" class="incoming-worklist-strip"></div>
+
+                <div class="dashboard-grid">
+                    <!-- Left Column: Patient Order & X-Ray Exposure Parameters -->
+                    <div class="col-left">
+                        <!-- Card 1: Patient Order & Priority Triage -->
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fa-solid fa-clipboard-user"></i>
+                                <h3>1. Tiếp nhận Chỉ định Chụp & Phân loại Ưu tiên (HIS Order)</h3>
+                                <span class="badge-outline">RBAC: Kỹ thuật viên CĐHA</span>
+                            </div>
+                            <div class="card-body">
+                                <form id="tech-order-form" class="form-grid">
+                                    <div class="form-group">
+                                        <label>Mã Bệnh Nhân (ID) <span class="required">*</span></label>
+                                        <input type="text" id="tech-patient-id" placeholder="VD: BN-CC2099" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Họ và tên bệnh nhân <span class="required">*</span></label>
+                                        <input type="text" id="tech-patient-name" placeholder="VD: Nguyễn Văn Minh" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tuổi</label>
+                                        <input type="number" id="tech-patient-age" placeholder="VD: 58" min="0" max="130" value="58">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Giới tính</label>
+                                        <select id="tech-patient-gender">
+                                            <option value="Nam">Nam</option>
+                                            <option value="Nữ">Nữ</option>
+                                            <option value="Khác">Khác</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Khoa / Phòng gửi chỉ định</label>
+                                        <select id="tech-referring-dept">
+                                            <option value="Khoa Cấp cứu - Hồi sức (ICU)">Khoa Cấp cứu - Hồi sức (ICU)</option>
+                                            <option value="Khoa Nội Hô hấp">Khoa Nội Hô hấp</option>
+                                            <option value="Khoa Khám bệnh Đa khoa">Khoa Khám bệnh Đa khoa</option>
+                                            <option value="Khoa Nhi Cấp cứu">Khoa Nhi Cấp cứu</option>
+                                            <option value=" Trung tâm Khám Sức khỏe Định kỳ">Trung tâm Khám Sức khỏe Định kỳ</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mức độ Ưu tiên Lâm sàng (Triage)</label>
+                                        <select id="tech-priority" class="priority-select">
+                                            <option value="STAT">🚨 STAT — Cấp cứu Tối khẩn (Đọc ngay)</option>
+                                            <option value="URGENT">⚡ URGENT — Khẩn cấp (Ưu tiên)</option>
+                                            <option value="ROUTINE" selected>📋 ROUTINE — Thường quy</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Bác sĩ Chẩn đoán tiếp nhận trên PACS</label>
+                                        <select id="tech-assigned-doc">
+                                            <option value="BS.CKII Nguyễn Văn A">BS.CKII Nguyễn Văn A (Trưởng khoa CĐHA)</option>
+                                            <option value="ThS.BS Lê Minh Châu">ThS.BS Lê Minh Châu (Chuyên khoa Hô hấp & X-Quang)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Triệu chứng lâm sàng & Yêu cầu từ Bác sĩ lâm sàng</label>
+                                        <input type="text" id="tech-symptoms" placeholder="VD: Sốt cao 39°C, khó thở cấp, đau tức ngực phải, nghi viêm phổi thùy">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Modality Exposure & Technical Parameters -->
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fa-solid fa-sliders"></i>
+                                <h3>2. Thông số Kỹ thuật Máy X-Quang & An toàn Bức xạ (ALARA)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Thiết bị Chụp X-Quang Kỹ thuật số (Modality)</label>
+                                        <select id="tech-modality-room">
+                                            <option value="DR-01 (Fujifilm FDR Visionary)">DR-01 (Fujifilm FDR Visionary)</option>
+                                            <option value="DR-02 (Siemens Ysio Max)">DR-02 (Siemens Ysio Max)</option>
+                                            <option value="MOBILE-01 (GE Optima Cấp cứu tại giường)">MOBILE-01 (GE Optima Cấp cứu tại giường)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tư thế Chụp (Projection View)</label>
+                                        <select id="tech-view-pos">
+                                            <option value="PA Erect (Đứng chuẩn sau-trước)">PA Erect (Đứng chuẩn sau-trước)</option>
+                                            <option value="AP Supine (Nằm ngửa tại giường)">AP Supine (Nằm ngửa tại giường)</option>
+                                            <option value="Lateral (Nghiêng lồng ngực)">Lateral (Nghiêng lồng ngực)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Điện áp đỉnh bóng X-Quang (kVp: 50–140)</label>
+                                        <input type="number" id="tech-kvp" value="110" min="50" max="140" step="1" oninput="recalcRadiationDose()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Lượng điện tích dòng-thời gian (mAs: 0.5–40)</label>
+                                        <input type="number" id="tech-mas" value="4.0" min="0.5" max="40" step="0.5" oninput="recalcRadiationDose()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Khoảng cách Nguồn - Phim (SID cm)</label>
+                                        <input type="number" id="tech-sid" value="180" min="100" max="220" step="5" oninput="recalcRadiationDose()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Liều hấp thụ bề mặt ước tính (ESD Dose)</label>
+                                        <div class="dose-readout-box" id="tech-dose-readout">
+                                            <i class="fa-solid fa-shield-virus"></i>
+                                            <strong id="tech-esd-val">0.11 mGy</strong>
+                                            <span class="dose-status-ok">Đạt chuẩn ALARA (&lt;0.30 mGy)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Digital Darkroom, QA Checklist & Send to Doctor -->
+                    <div class="col-right">
+                        <!-- Card 3: Image Acquisition & Digital Darkroom -->
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fa-solid fa-x-ray"></i>
+                                <h3>3. Thu nhận Ảnh DICOM & Buồng tối Kỹ thuật số (Digital Darkroom)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="quick-samples-bar">
+                                    <div class="samples-label"><i class="fa-solid fa-bolt"></i> Nạp nhanh Ca chụp Mẫu Thực nghiệm (1-Click Acquisition):</div>
+                                    <div class="sample-chips-row">
+                                        <button type="button" class="sample-chip" onclick="loadTechSampleCase('bacteria')">
+                                            <i class="fa-solid fa-truck-medical"></i> Ca 1: Cấp cứu Viêm phổi Vi khuẩn (STAT)
+                                        </button>
+                                        <button type="button" class="sample-chip" onclick="loadTechSampleCase('virus')">
+                                            <i class="fa-solid fa-virus"></i> Ca 2: Khẩn Viêm phổi Virus (URGENT)
+                                        </button>
+                                        <button type="button" class="sample-chip" onclick="loadTechSampleCase('normal')">
+                                            <i class="fa-solid fa-heart-pulse"></i> Ca 3: Khám định kỳ Bình thường
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="upload-zone" id="tech-upload-zone">
+                                    <input type="file" id="tech-file-input" accept=".jpg, .jpeg, .png, .dcm" hidden>
+                                    <i class="fa-solid fa-camera upload-icon"></i>
+                                    <h4>Nhấn để Thu nhận Phim từ Tấm nhận phẳng (Flat Panel Detector) hoặc Tải file DICOM/JPEG</h4>
+                                    <p>Tự động kiểm tra định dạng ảnh y tế và tính mã băm toàn vẹn SHA-256</p>
+                                </div>
+
+                                <div class="viewer-container hidden" id="tech-viewer-container">
+                                    <div class="image-wrapper tech-xray-frame">
+                                        <div class="xray-marker-overlay" id="xray-marker-overlay">
+                                            <span class="marker-badge">R / L VERIFIED</span>
+                                            <span class="marker-meta" id="overlay-kvp-mas">PA • 110 kVp • 4.0 mAs</span>
+                                        </div>
+                                        <img id="tech-preview-image" src="" alt="Acquired X-Ray">
+                                    </div>
+
+                                    <!-- Radiographer Calibration Toolbar -->
+                                    <div class="darkroom-toolbar">
+                                        <div class="darkroom-sliders">
+                                            <div class="dr-slider-item">
+                                                <label>Độ sáng (Brightness): <span id="lbl-bright">100%</span></label>
+                                                <input type="range" id="tech-slider-bright" min="70" max="140" value="100" oninput="applyTechDarkroomFilters()">
+                                            </div>
+                                            <div class="dr-slider-item">
+                                                <label>Độ tương phản (Contrast): <span id="lbl-contrast">105%</span></label>
+                                                <input type="range" id="tech-slider-contrast" min="80" max="160" value="105" oninput="applyTechDarkroomFilters()">
+                                            </div>
+                                        </div>
+                                        <div class="darkroom-buttons">
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleTechInvert()">
+                                                <i class="fa-solid fa-circle-half-stroke"></i> Âm bản
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="rotateTechImage()">
+                                                <i class="fa-solid fa-rotate-right"></i> Xoay 90°
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="flipTechImage()">
+                                                <i class="fa-solid fa-arrows-left-right"></i> Lật P/T
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="resetTechDarkroomFilters()">
+                                                <i class="fa-solid fa-arrow-rotate-left"></i> Mặc định
+                                            </button>
+                                            <button type="button" class="btn btn-icon" onclick="clearTechUploadedImage()" title="Hủy ảnh này">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: QA/QC Verification, AI Pre-Triage & Push to Doctor -->
+                        <div class="card">
+                            <div class="card-header highlight">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <h3>4. Kiểm chuẩn QA/QC, AI Sàng lọc & Gửi tới Bác sĩ Chẩn đoán</h3>
+                                <span class="badge" id="tech-qa-status-badge">4/4 Đạt chuẩn</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="qa-checklist-box">
+                                    <h4><i class="fa-solid fa-list-check"></i> Bảng Kiểm định Chất lượng Phim X-Quang (Tiêu chuẩn Bộ Y tế)</h4>
+                                    <label class="qa-check-item">
+                                        <input type="checkbox" class="tech-qa-checkbox" checked onchange="updateTechQAScore()">
+                                        <span>Bao phủ đầy đủ giải phẫu 2 đỉnh phổi và 2 góc sườn hoành</span>
+                                    </label>
+                                    <label class="qa-check-item">
+                                        <input type="checkbox" class="tech-qa-checkbox" checked onchange="updateTechQAScore()">
+                                        <span>Bệnh nhân hít vào đủ sâu (quan sát rõ ≥ 9–10 cung xương sườn sau)</span>
+                                    </label>
+                                    <label class="qa-check-item">
+                                        <input type="checkbox" class="tech-qa-checkbox" checked onchange="updateTechQAScore()">
+                                        <span>Không bị nhoè do chuyển động (Motion Artifact) hoặc dị vật kim loại</span>
+                                    </label>
+                                    <label class="qa-check-item">
+                                        <input type="checkbox" class="tech-qa-checkbox" checked onchange="updateTechQAScore()">
+                                        <span>Đã kiểm tra nhãn định vị Phải/Trái (L/R) & Tiền xử lý cân bằng CLAHE</span>
+                                    </label>
+                                </div>
+
+                                <!-- Optional AI Pre-Triage Box -->
+                                <div class="tech-pretriage-box" id="tech-pretriage-box">
+                                    <div class="pretriage-header">
+                                        <div>
+                                            <strong><i class="fa-solid fa-microchip"></i> Sàng lọc Ưu tiên Cấp cứu bằng AI (AI Pre-Triage)</strong>
+                                            <p class="text-muted" style="font-size:12px;">Hỗ trợ KTV phát hiện sớm phim bất thường để tự động gắn cờ Ưu tiên Cấp cứu (STAT) khi gửi Bác sĩ. (KTV không có quyền ký kết luận chẩn đoán).</p>
+                                        </div>
+                                        <button type="button" class="btn btn-secondary btn-sm" id="btn-tech-pretriage" onclick="runTechAIPreTriage()">
+                                            <i class="fa-solid fa-bolt"></i> Chạy AI Sàng lọc
+                                        </button>
+                                    </div>
+                                    <div id="tech-pretriage-result" class="pretriage-result hidden"></div>
+                                </div>
+
+                                <div class="form-group" style="margin-top: 14px;">
+                                    <label>Ghi chú Bàn giao Kỹ thuật gửi Bác sĩ Chẩn đoán</label>
+                                    <textarea id="tech-notes" rows="2" placeholder="VD: Bệnh nhân khó thở cấp, đã cân bằng sáng CLAHE vùng đáy phổi phải, kính chuyển Bác sĩ đọc ưu tiên..."></textarea>
+                                </div>
+
+                                <div class="tech-submit-actions">
+                                    <button type="button" class="btn btn-primary full-width btn-lg" onclick="pushExamToDoctorWorklist(false)">
+                                        <i class="fa-solid fa-paper-plane"></i> GỬI CA CHỤP ĐẾN BÁC SĨ CHẨN ĐOÁN (PUSH TO PACS)
+                                    </button>
+                                    <button type="button" class="btn btn-secondary full-width" style="margin-top: 8px;" onclick="pushExamToDoctorWorklist(true)">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Gửi & Chuyển ngay sang Giao diện Bác sĩ để Đọc phim
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 2: DANH SÁCH CA ĐÃ GỬI BÁC SĨ (WORKLIST SENT) -->
+            <!-- ======================================================= -->
+            <section id="view-worklist-sent" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 3: KIỂM CHUẨN MÁY X-QUANG & AN TOÀN BỨC XẠ -->
+            <!-- ======================================================= -->
+            <section id="view-modality-qa" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 4: PHÂN QUYỀN RBAC & THÔNG TIN CA TRỰC KTV -->
+            <!-- ======================================================= -->
+            <section id="view-tech-profile" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- PROMINENT YELLOW RESEARCH DEMO WARNING BANNER -->
+            <!-- ======================================================= -->
+            <footer class="research-warning-banner">
+                <div class="banner-inner">
+                    <i class="fa-solid fa-triangle-exclamation banner-icon"></i>
+                    <div class="banner-text-wrap">
+                        <strong class="banner-title">CẢNH BÁO QUAN TRỌNG:</strong>
+                        <span class="banner-text">Đây là website demo cho dự án nghiên cứu khoa học. Không sử dụng cho thực tế.</span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <div id="toast" class="toast">Đã gửi thành công!</div>
+
+    <script src="db.js?v=4.3"></script>
+    <script src="portal-nav.js?v=4.3"></script>
+    <script src="technician.js?v=4.3"></script>
+</body>
+</html>

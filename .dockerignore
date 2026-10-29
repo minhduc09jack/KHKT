@@ -1,0 +1,32 @@
+# Critical: Exclude multi-gigabyte raw datasets and zip archives
+*.zip
+*.tar
+*.gz
+KHKT_Data.zip
+archive.zip
+archive/
+pneumonia_raw_data/
+federated_data/
+
+# Version control & OS artifacts
+.git/
+.gitignore
+.gitattributes
+.DS_Store
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Local logs, experimental plots, and training scripts
+logs/
+plots/
+metrics/
+scripts/
+docs/
+train_*.py
+client_*.py
+server_*.py
+plot_*.py
+process_*.py
+run_*.sh

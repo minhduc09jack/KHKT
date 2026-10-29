@@ -2,6 +2,8 @@
 federated_data/
 pneumonia_raw_data/
 *.pth
+!demo_weights.pth
+KHKT_Data.zip
 
 # === Python ===
 __pycache__/

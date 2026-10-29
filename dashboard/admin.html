@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị Hệ thống & Bảo mật Client Bệnh viện (Admin Control Center) - MedAI PACS/HIS</title>
+    <meta name="description" content="Giao diện Admin tại mỗi Client Bệnh viện: Điều khiển hệ thống PACS/HIS, cấu hình Federated Learning (FedProx) & Differential Privacy, phân quyền RBAC và kiểm toán bảo mật y tế.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=4.3">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" onclick="adminNavigateTo('overview')" style="cursor: pointer;" title="Trung tâm Điều hành Admin Bệnh viện">
+                <div class="logo-icon-wrap admin-theme">
+                    <i class="fa-solid fa-shield-halved logo-icon"></i>
+                </div>
+                <div class="sidebar-brand">
+                    <h2>MedAI ADMIN</h2>
+                    <span>CLIENT BỆNH VIỆN</span>
+                </div>
+            </div>
+
+            <ul class="nav-links">
+                <li class="nav-item active" data-route="overview">
+                    <a href="#/overview"><i class="fa-solid fa-gauge-high"></i> Điều khiển Hệ thống</a>
+                </li>
+                <li class="nav-item" data-route="federated-dp">
+                    <a href="#/federated-dp"><i class="fa-solid fa-network-wired"></i> Federated Learning & DP</a>
+                </li>
+                <li class="nav-item" data-route="rbac-users">
+                    <a href="#/rbac-users"><i class="fa-solid fa-users-gear"></i> Phân quyền RBAC & Nhân sự</a>
+                </li>
+                <li class="nav-item" data-route="security-compliance">
+                    <a href="#/security-compliance"><i class="fa-solid fa-file-shield"></i> Quy chuẩn Bảo mật Y tế</a>
+                </li>
+                <li class="nav-item" data-route="audit-logs">
+                    <a href="#/audit-logs"><i class="fa-solid fa-clipboard-list"></i> Nhật ký Kiểm toán (Audit)</a>
+                </li>
+                <li class="nav-section-divider"><span>CHUYỂN GIAO DIỆN HỆ THỐNG</span></li>
+                <li class="nav-item">
+                    <a href="technician.html"><i class="fa-solid fa-x-ray"></i> Phòng chụp X-Quang (KTV)</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html">
+                        <i class="fa-solid fa-user-doctor"></i> Bác sĩ Chẩn đoán (PACS)
+                        <span class="nav-count-badge" id="sidebar-worklist-badge">0</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="doctor-profile" onclick="adminNavigateTo('rbac-users')" style="cursor: pointer;" title="Tài khoản Quản trị viên Bệnh viện">
+                <img src="https://ui-avatars.com/api/?name=Admin+BV&background=7C3AED&color=fff" alt="Admin" id="sidebar-admin-avatar">
+                <div class="doc-info">
+                    <strong id="sidebar-admin-name">KS. Trần Quốc Bảo</strong>
+                    <span id="sidebar-admin-node">Admin • Client 1 (BV Phổi)</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="admin-main-content">
+
+            <!-- ======================================================= -->
+            <!-- VIEW 1: TRUNG TÂM ĐIỀU KHIỂN HỆ THỐNG CLIENT BỆNH VIỆN -->
+            <!-- ======================================================= -->
+            <section id="view-overview" class="view-panel active"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 2: ĐIỀU PHỐI HỌC MÁY LIÊN KẾT & BẢO MẬT VI PHÂN -->
+            <!-- ======================================================= -->
+            <section id="view-federated-dp" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 3: QUẢN LÝ NHÂN SỰ & MA TRẬN PHÂN QUYỀN RBAC -->
+            <!-- ======================================================= -->
+            <section id="view-rbac-users" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 4: TUÂN THỦ QUY ĐỊNH BẢO MẬT BỆNH VIỆN -->
+            <!-- ======================================================= -->
+            <section id="view-security-compliance" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 5: NHẬT KÝ KIỂM TOÁN BẢO MẬT BẤT BIẾN (AUDIT LOGS) -->
+            <!-- ======================================================= -->
+            <section id="view-audit-logs" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- PROMINENT YELLOW RESEARCH DEMO WARNING BANNER -->
+            <!-- ======================================================= -->
+            <footer class="research-warning-banner">
+                <div class="banner-inner">
+                    <i class="fa-solid fa-triangle-exclamation banner-icon"></i>
+                    <div class="banner-text-wrap">
+                        <strong class="banner-title">CẢNH BÁO QUAN TRỌNG:</strong>
+                        <span class="banner-text">Đây là website demo cho dự án nghiên cứu khoa học. Không sử dụng cho thực tế.</span>
+                    </div>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <div id="toast" class="toast">Đã cập nhật cấu hình hệ thống!</div>
+
+    <script src="db.js?v=4.3"></script>
+    <script src="portal-nav.js?v=4.3"></script>
+    <script src="admin.js?v=4.3"></script>
+</body>
+</html>

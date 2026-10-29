@@ -1,36 +1,345 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="5">
-    <title>AI Training Dashboard</title>
-    <style>
-        body { font-family: -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; text-align: center; padding: 10vh 5vw; margin: 0; }
-        .card { background: #161b22; border: 1px solid #30363d; border-radius: 15px; padding: 30px 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        h1 { color: #58a6ff; font-size: 1.5em; margin-bottom: 5px; }
-        h2 { color: #8b949e; font-size: 1.2em; font-weight: normal; margin-top: 0; }
-        .progress-bar { width: 100%; background: #21262d; border-radius: 20px; overflow: hidden; margin: 25px 0; height: 25px; border: 1px solid #30363d; }
-        .progress { width: 0.0%; background: linear-gradient(90deg, #238636, #2ea043); height: 100%; transition: width 0.5s ease-in-out; }
-        .percent-text { font-size: 2em; font-weight: bold; color: #ffffff; margin-bottom: 20px; }
-        .metrics { margin-top: 25px; padding: 15px; background: #0d1117; border-radius: 10px; font-size: 1.1em; color: #7ee787; border: 1px dashed #30363d; }
-    </style>
+    <title>Bác sĩ Chẩn đoán Hình ảnh (PACS/HIS) - MedAI Diagnostic</title>
+    <meta name="description" content="Giao diện Bác sĩ Chẩn đoán X-Quang Phổi AI nhận ca chụp thời gian thực từ Kỹ thuật viên phòng X-Quang, tích hợp Federated Learning & Differential Privacy.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=4.3">
+    <!-- html2pdf for exporting reports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <div class="card">
-        <h1>🚀 Federated Learning V5 (DP)</h1>
-        <h2>Ensemble + Differential Privacy</h2>
-        
-        <div class="progress-bar">
-            <div class="progress"></div>
-        </div>
-        
-        <div class="percent-text">0.0%</div>
-        <h2 style="color: #c9d1d9;">Round 0 / 30</h2>
-        
-        <div class="metrics">
-            Đang chờ hoàn thành Round 1...
-        </div>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" onclick="navigateTo('new')" style="cursor: pointer;" title="Trang chủ Bác sĩ Chẩn đoán">
+                <div class="logo-icon-wrap">
+                    <i class="fa-solid fa-heart-pulse logo-icon"></i>
+                </div>
+                <div class="sidebar-brand">
+                    <h2>MedAI PACS</h2>
+                    <span>BÁC SĨ CHẨN ĐOÁN</span>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active" data-route="new">
+                    <a href="#/new"><i class="fa-solid fa-stethoscope"></i> Trạm Đọc Phim & AI</a>
+                </li>
+                <li class="nav-item" data-route="worklist">
+                    <a href="#/worklist">
+                        <i class="fa-solid fa-List-check fa-list-check"></i> Hàng đợi từ Phòng XQ
+                        <span class="nav-count-badge has-items" id="sidebar-worklist-badge">0</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-route="history">
+                    <a href="#/history"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử chẩn đoán</a>
+                </li>
+                <li class="nav-item" data-route="patients">
+                    <a href="#/patients"><i class="fa-solid fa-folder-open"></i> Hồ sơ bệnh án</a>
+                </li>
+                <li class="nav-item" data-route="settings">
+                    <a href="#/settings"><i class="fa-solid fa-gear"></i> Cài đặt Bác sĩ</a>
+                </li>
+                <li class="nav-section-divider"><span>CHUYỂN GIAO DIỆN HỆ THỐNG</span></li>
+                <li class="nav-item">
+                    <a href="technician.html"><i class="fa-solid fa-x-ray"></i> Phòng chụp X-Quang (KTV)</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html"><i class="fa-solid fa-shield-halved"></i> Quản trị Client Bệnh viện</a>
+                </li>
+            </ul>
+            <div class="doctor-profile" onclick="navigateTo('settings')" style="cursor: pointer;" title="Nhấn để tùy chỉnh thông tin bác sĩ">
+                <img src="https://ui-avatars.com/api/?name=Dr+AI&background=0284C7&color=fff" alt="Doctor" id="sidebar-doc-avatar">
+                <div class="doc-info">
+                    <strong id="sidebar-doc-name">BS.CKII Nguyễn Văn A</strong>
+                    <span id="sidebar-doc-dept">Khoa Chẩn đoán hình ảnh</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="report-content">
+
+            <!-- ======================================================= -->
+            <!-- VIEW 1: PHIÊN KHÁM MỚI & TRẠM ĐỌC PHIM PACS (NEW EXAM) -->
+            <!-- ======================================================= -->
+            <section id="view-new" class="view-panel active">
+                <header class="topbar">
+                    <div class="page-title">
+                        <h1>Trạm Đọc Phim X-Quang Phổi & Chẩn Đoán AI (Radiologist Workstation)</h1>
+                        <p>Tiếp nhận ca chụp trực tiếp từ Kỹ thuật viên Phòng X-Quang • Mô hình Hybrid Ensemble (FedProx + DP)</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary" onclick="window.openHospitalDatasetModal()">
+                            <i class="fa-solid fa-database"></i> Import Dataset (federated_data)
+                        </button>
+                        <button class="btn btn-secondary" onclick="navigateTo('worklist')">
+                            <i class="fa-solid fa-inbox"></i> Hàng đợi KTV gửi
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetForm()"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
+                        <button class="btn btn-primary" onclick="exportPDF()"><i class="fa-solid fa-file-pdf"></i> Xuất báo cáo PDF</button>
+                    </div>
+                </header>
+
+                <!-- INCOMING WORKLIST QUEUE FROM X-RAY TECHNICIAN -->
+                <div id="doctor-incoming-queue-widget" class="incoming-worklist-strip"></div>
+
+                <!-- ACTIVE TECHNICIAN HANDOFF METADATA BANNER (Shown when a case from Technician is loaded) -->
+                <div id="active-tech-handoff-banner" class="tech-handoff-banner hidden"></div>
+
+                <div class="dashboard-grid">
+                    <!-- Left Column -->
+                    <div class="col-left">
+                        <!-- Patient Info Card -->
+                        <div class="card patient-card">
+                            <div class="card-header">
+                                <i class="fa-regular fa-address-card"></i>
+                                <h3>Thông tin bệnh nhân tiếp nhận</h3>
+                                <span class="badge-outline" id="active-case-source-badge">Tiếp nhận trực tiếp</span>
+                            </div>
+                            <div class="card-body">
+                                <form id="patient-form" class="form-grid">
+                                    <div class="form-group">
+                                        <label>Mã Bệnh Nhân (ID) <span class="required">*</span></label>
+                                        <input type="text" id="patient-id" placeholder="VD: BN10293" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Họ và tên</label>
+                                        <input type="text" id="patient-name" placeholder="VD: Trần Thị B">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Tuổi</label>
+                                        <input type="number" id="patient-age" placeholder="VD: 45" min="0" max="130">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Giới tính</label>
+                                        <select id="patient-gender">
+                                            <option value="Nam">Nam</option>
+                                            <option value="Nữ">Nữ</option>
+                                            <option value="Khác">Khác</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Lý do khám / Triệu chứng lâm sàng & Ghi chú từ Khoa chỉ định</label>
+                                        <input type="text" id="patient-symptoms" placeholder="VD: Ho kéo dài, sốt nhẹ, khó thở, tức ngực">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload & Viewer -->
+                        <div class="card viewer-card">
+                            <div class="card-header">
+                                <i class="fa-solid fa-x-ray"></i>
+                                <h3>Dữ liệu hình ảnh PACS (DICOM / JPEG / PNG)</h3>
+                            </div>
+                            <div class="card-body">
+
+                                <!-- Quick Sample Chips for live testing -->
+                                <div class="quick-samples-bar">
+                                    <div class="samples-label"><i class="fa-solid fa-bolt"></i> Thử nghiệm nhanh với ảnh mẫu chuẩn (Quick Demo Samples):</div>
+                                    <div class="sample-chips-row">
+                                        <button type="button" class="sample-chip" onclick="loadSampleXray('bacteria')">
+                                            <i class="fa-solid fa-bacterium"></i> Mẫu 1: Viêm phổi do Vi khuẩn
+                                        </button>
+                                        <button type="button" class="sample-chip" onclick="loadSampleXray('virus')">
+                                            <i class="fa-solid fa-virus"></i> Mẫu 2: Viêm phổi do Virus
+                                        </button>
+                                        <button type="button" class="sample-chip" onclick="loadSampleXray('normal')">
+                                            <i class="fa-solid fa-heart-pulse"></i> Mẫu 3: Phổi bình thường
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="upload-zone" id="upload-zone">
+                                    <input type="file" id="file-input" accept=".jpg, .jpeg, .png, .dcm" hidden>
+                                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                                    <h4>Kéo thả ảnh X-quang hoặc chọn Ca chụp từ Hàng đợi KTV phía trên</h4>
+                                    <p>Hỗ trợ định dạng X-Quang chuẩn y tế (DICOM) và ảnh thông thường (JPEG/PNG)</p>
+                                </div>
+                                
+                                <div class="viewer-container hidden" id="viewer-container">
+                                    <div class="image-wrapper" id="doctor-image-wrapper">
+                                        <img id="original-image" src="" alt="X-Ray Image">
+                                        <img id="heatmap-image" src="" alt="Heatmap" class="hidden">
+                                    </div>
+                                    <div class="viewer-controls">
+                                        <div class="viewer-tools-left">
+                                            <button type="button" class="btn btn-icon" id="btn-reupload" title="Đổi / Tải ảnh khác"><i class="fa-solid fa-trash-can"></i></button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleDoctorInvertXray()" title="Đảo ngược âm bản xương/phổi">
+                                                <i class="fa-solid fa-circle-half-stroke"></i> Âm bản
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleDoctorContrastBoost()" title="Tăng tương phản vi mạch phổi">
+                                                <i class="fa-solid fa-sun"></i> Tăng nét
+                                            </button>
+                                        </div>
+                                        <div class="toggle-group">
+                                            <label class="switch">
+                                                <input type="checkbox" id="toggle-heatmap">
+                                                <span class="slider round"></span>
+                                            </label>
+                                            <span>Hiển thị vùng tổn thương (Grad-CAM)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-right">
+                        <!-- AI Result Card -->
+                        <div class="card result-card">
+                            <div class="card-header highlight">
+                                <i class="fa-solid fa-brain"></i>
+                                <h3>Kết quả phân tích AI Ensemble</h3>
+                                <span class="badge" id="ai-status">Chưa có dữ liệu</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="result-placeholder" id="result-placeholder">
+                                    <i class="fa-solid fa-stethoscope"></i>
+                                    <p>Hãy tiếp nhận ca chụp từ Hàng đợi Phòng X-Quang hoặc chọn ảnh mẫu bên cạnh để AI thực hiện chẩn đoán.</p>
+                                </div>
+
+                                <div class="result-content hidden" id="result-content">
+                                    <div class="diagnosis-badge" id="diagnosis-badge">
+                                        <h2 id="diagnosis-text">PNEUMONIA (VIÊM PHỔI)</h2>
+                                    </div>
+                                    
+                                    <div class="prob-section">
+                                        <h4>Độ tin cậy mô hình Ensemble (DenseNet-121 + EfficientNet-B0)</h4>
+                                        
+                                        <div class="prob-item">
+                                            <div class="prob-label">
+                                                <span>Viêm phổi (Pneumonia)</span>
+                                                <span id="prob-pneumonia-text">0.0%</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill danger" id="prob-pneumonia-bar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="prob-item">
+                                            <div class="prob-label">
+                                                <span>Bình thường (Normal)</span>
+                                                <span id="prob-normal-text">0.0%</span>
+                                            </div>
+                                            <div class="progress-bar">
+                                                <div class="progress-fill success" id="prob-normal-bar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="integrity-verify-strip" id="integrity-verify-strip">
+                                        <i class="fa-solid fa-fingerprint"></i>
+                                        <span>Mã kiểm chứng toàn vẹn DICOM SHA-256: <strong id="case-sha256-label">VERIFIED-LOCAL</strong></span>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-primary full-width hidden" id="btn-analyze" onclick="analyzeImage()">
+                                    <i class="fa-solid fa-microchip"></i> Bắt đầu phân tích AI & Grad-CAM
+                                </button>
+                                <!-- Loading state -->
+                                <button class="btn btn-primary full-width hidden" id="btn-analyzing" disabled>
+                                    <i class="fa-solid fa-circle-notch fa-spin"></i> Đang phân tích mô hình & Grad-CAM...
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Clinical Notes & Digital Sign-off Card -->
+                        <div class="card notes-card">
+                            <div class="card-header">
+                                <i class="fa-solid fa-file-signature"></i>
+                                <h3>Kết luận lâm sàng & Ký số Y khoa (Bác sĩ)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="quick-note-templates">
+                                    <span class="template-label">Mẫu kết luận nhanh:</span>
+                                    <button type="button" class="template-chip" onclick="insertDoctorNoteTemplate('pneumonia_lobar')">+ Đông đặc thùy phổi (Vi khuẩn)</button>
+                                    <button type="button" class="template-chip" onclick="insertDoctorNoteTemplate('pneumonia_interstitial')">+ Tổn thương mô kẽ lan tỏa (Virus)</button>
+                                    <button type="button" class="template-chip" onclick="insertDoctorNoteTemplate('normal_chest')">+ Phổi sáng đều bình thường</button>
+                                </div>
+
+                                <textarea id="doctor-notes" placeholder="Nhập kết luận chuyên môn, mô tả tổn thương nhu mô phổi, chỉ định cận lâm sàng hoặc phác đồ điều trị..." rows="4"></textarea>
+
+                                <div class="notes-footer-row">
+                                    <div class="doctor-sign-actions">
+                                        <button type="button" class="btn btn-primary btn-sm" id="btn-sign-complete" onclick="finalizeAndSignDoctorDiagnosis()">
+                                            <i class="fa-solid fa-signature"></i> Ký số & Hoàn tất Ca khám
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" id="btn-save-notes" onclick="saveActiveDoctorNotes()">
+                                            <i class="fa-solid fa-floppy-disk"></i> Lưu nháp
+                                        </button>
+                                        <button type="button" class="btn btn-danger-outline btn-sm" id="btn-request-retake" onclick="requestTechnicianRetake()" title="Trả lại ca chụp cho KTV Phòng X-Quang yêu cầu chụp lại">
+                                            <i class="fa-solid fa-rotate-left"></i> Yêu cầu KTV chụp lại
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="margin-top:6px;">
+                                    <span class="text-muted text-small" id="notes-save-status">Chữ ký số bác sĩ sẽ đồng bộ trực tiếp sang Phòng X-Quang và Hồ sơ bệnh án</span>
+                                </div>
+
+                                <div class="signature-section">
+                                    <p><strong>Bác sĩ Chẩn đoán:</strong> <span id="signature-doc-name">BS.CKII Nguyễn Văn A</span></p>
+                                    <p><strong>Ngày giờ ký kết luận:</strong> <span id="current-date"></span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 1B: HÀNG ĐỢI CA CHỤP TỪ PHÒNG X-QUANG (WORKLIST) -->
+            <!-- ======================================================= -->
+            <section id="view-worklist" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 2: LỊCH SỬ CHẨN ĐOÁN (HISTORY) -->
+            <!-- ======================================================= -->
+            <section id="view-history" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 3: HỒ SƠ BỆNH ÁN (PATIENTS LIST) -->
+            <!-- ======================================================= -->
+            <section id="view-patients" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 4: CHI TIẾT HỒ SƠ & TIMELINE (PATIENT DETAIL) -->
+            <!-- ======================================================= -->
+            <section id="view-patient-detail" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- VIEW 5: CÀI ĐẶT HỆ THỐNG (SETTINGS) -->
+            <!-- ======================================================= -->
+            <section id="view-settings" class="view-panel hidden"></section>
+
+            <!-- ======================================================= -->
+            <!-- PROMINENT YELLOW RESEARCH DEMO WARNING BANNER -->
+            <!-- ======================================================= -->
+            <footer class="research-warning-banner" id="warning-banner">
+                <div class="banner-inner">
+                    <i class="fa-solid fa-triangle-exclamation banner-icon"></i>
+                    <div class="banner-text-wrap">
+                        <strong class="banner-title">CẢNH BÁO QUAN TRỌNG:</strong>
+                        <span class="banner-text">Đây là website demo cho dự án nghiên cứu khoa học. Không sử dụng cho thực tế.</span>
+                    </div>
+                </div>
+            </footer>
+
+        </main>
     </div>
+    
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">Đã lưu thành công!</div>
+
+    <!-- Scripts with Cache-Busting -->
+    <script src="db.js?v=4.3"></script>
+    <script src="portal-nav.js?v=4.3"></script>
+    <script src="views.js?v=4.3"></script>
+    <script src="script.js?v=4.3"></script>
 </body>
 </html>
